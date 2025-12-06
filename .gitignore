@@ -1,0 +1,134 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# PyTorch
+*.pth
+*.pth.tar
+*.pt
+*.ckpt
+
+# Model checkpoints
+gen.pth.tar
+disc.pth.tar
+*.pth.tar
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data directories
+data/
+dataset/
+datasets/
+*.tar.gz
+*.zip
+maps.tar.gz
+facades.tar.gz
+
+# Generated outputs
+evaluation/
+predictions/
+outputs/
+results/
+samples/
+generated/
+
+# Test images
+x.png
+y.png
+test_*.png
+sample_*.png
+
+# Logs
+*.log
+logs/
+runs/
+tensorboard/
+wandb/
+
+# Training artifacts
+checkpoints/
+saved_models/
+experiments/
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Documentation build
+docs/_build/
+site/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Large files (Git LFS)
+*.bin
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+
+# Specific to this project
+# (Add any project-specific files to ignore below)
