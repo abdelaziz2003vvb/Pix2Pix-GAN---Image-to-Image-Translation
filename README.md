@@ -7,30 +7,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Training](https://img.shields.io/badge/Training-CPU%20%7C%20GPU-orange)]()
 
-## 📸 Results & Demo
 
-### Satellite → Map Translation
-
-<table>
-  <tr>
-    <th>Input (Satellite)</th>
-    <th>Generated (Map)</th>
-    <th>Ground Truth</th>
-  </tr>
-  <tr>
-    <td><img src="evaluation/input_0.png" alt="Input"></td>
-    <td><img src="evaluation/y_gen_49.png" alt="Generated"></td>
-    <td><img src="evaluation/label_0.png" alt="Ground Truth"></td>
-  </tr>
-</table>
-
-### Training Progress
-
-| Epoch 1 | Epoch 10 | Epoch 25 | Epoch 50 |
-|---------|----------|----------|----------|
-| ![](evaluation/y_gen_1.png) | ![](evaluation/y_gen_10.png) | ![](evaluation/y_gen_25.png) | ![](evaluation/y_gen_49.png) |
-
-*Watch the model learn to generate accurate maps from satellite imagery!*
 
 ## ✨ Key Features
 
