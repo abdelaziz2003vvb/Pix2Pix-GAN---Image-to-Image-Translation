@@ -1,395 +1,329 @@
-# Pix2Pix GAN - Image-to-Image Translation
+# 🎨 Pix2Pix GAN - Image-to-Image Translation
 
-A complete PyTorch implementation of Pix2Pix for image-to-image translation tasks (satellite-to-map, sketch-to-photo, day-to-night, etc.).
+> A complete PyTorch implementation of Pix2Pix for image-to-image translation tasks (satellite→map, sketch→photo, day→night, etc.)
 
-![Pix2Pix](https://img.shields.io/badge/Model-Pix2Pix-blue) ![PyTorch](https://img.shields.io/badge/Framework-PyTorch-red) ![License](https://img.shields.io/badge/License-MIT-green)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red?logo=pytorch)](https://pytorch.org/)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Training](https://img.shields.io/badge/Training-CPU%20%7C%20GPU-orange)]()
 
-## 🌟 Features
+## 📸 Results & Demo
 
-- **U-Net Generator** with skip connections for high-quality outputs
-- **PatchGAN Discriminator** for realistic texture generation
-- **Mixed Precision Training** for faster training on GPU
-- **CPU-Optimized Mode** for testing without GPU
-- **Automatic Checkpointing** with resume capability
-- **Progress Tracking** with real-time loss monitoring
-- **Inference Script** for easy prediction generation
-- **Dataset Downloader** for quick setup
+### Satellite → Map Translation
 
-## 📋 Table of Contents
+<table>
+  <tr>
+    <th>Input (Satellite)</th>
+    <th>Generated (Map)</th>
+    <th>Ground Truth</th>
+  </tr>
+  <tr>
+    <td><img src="evaluation/input_0.png" alt="Input"></td>
+    <td><img src="evaluation/y_gen_49.png" alt="Generated"></td>
+    <td><img src="evaluation/label_0.png" alt="Ground Truth"></td>
+  </tr>
+</table>
 
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Dataset Preparation](#dataset-preparation)
-- [Training](#training)
-- [Inference](#inference)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Performance Tips](#performance-tips)
-- [Results](#results)
-- [Troubleshooting](#troubleshooting)
-- [References](#references)
+### Training Progress
 
-## 🚀 Installation
+| Epoch 1 | Epoch 10 | Epoch 25 | Epoch 50 |
+|---------|----------|----------|----------|
+| ![](evaluation/y_gen_1.png) | ![](evaluation/y_gen_10.png) | ![](evaluation/y_gen_25.png) | ![](evaluation/y_gen_49.png) |
 
-### Requirements
+*Watch the model learn to generate accurate maps from satellite imagery!*
 
-- Python 3.8+
-- PyTorch 2.0+
-- CUDA 11.8+ (for GPU training, optional)
+## ✨ Key Features
 
-### Setup
+- **🏗️ U-Net Generator** with skip connections for high-quality outputs
+- **🎯 PatchGAN Discriminator** for realistic texture generation
+- **⚡ Mixed Precision Training** for 2x faster training on GPU
+- **💻 CPU-Optimized Mode** for testing without expensive GPU
+- **💾 Automatic Checkpointing** with seamless resume capability
+- **📊 Real-time Monitoring** with loss tracking and sample generation
+- **🎨 Easy Inference** script for generating predictions
+- **📦 One-Click Dataset Download** for quick setup
+
+## 🎯 What is Pix2Pix?
+
+Pix2Pix is a conditional GAN that learns to map images from one domain to another. It consists of:
+- **Generator (U-Net)**: Transforms input images to target domain
+- **Discriminator (PatchGAN)**: Distinguishes real vs generated images
+
+**Applications:**
+- 🛰️ Satellite → Map
+- 🏢 Building Labels → Photos
+- ⚫⚪ Edges → Photos
+- 🌙 Day → Night
+- 🎨 Sketch → Photo
+
+## 🚀 Quick Start
+
+### 1️⃣ Installation
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
+# Clone repository
+git clone https://github.com/yourusername/Pix2Pix_from_scratch.git
 cd Pix2Pix_from_scratch
 
 # Create virtual environment
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run setup script
+# Verify setup
 python setup.py
 ```
 
-### GPU Support (Optional but Recommended)
-
-For CUDA-enabled PyTorch:
-
-```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-```
-
-Verify GPU availability:
-
-```bash
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
-```
-
-## ⚡ Quick Start
-
-### 1. Download Sample Dataset
+### 2️⃣ Download Dataset
 
 ```bash
 # Download maps dataset (satellite → map)
 python download_data.py --dataset maps
 
-# Or download facades dataset (labels → building)
+# Or facades dataset (labels → building)
 python download_data.py --dataset facades
 ```
 
-### 2. Train the Model
+### 3️⃣ Train Model
 
-**For GPU (Recommended):**
+**GPU Training (Recommended):**
 ```bash
 python train.py
 ```
 
-**For CPU (Faster Testing):**
+**CPU Training (Faster Testing):**
 ```bash
-python train_cpu.py  # Uses optimized settings
+python train_cpu.py  # ~90 minutes for 50 epochs
 ```
 
-### 3. Generate Predictions
+### 4️⃣ Generate Predictions
 
 ```bash
 # Single image
-python inference.py --checkpoint gen.pth.tar --input image.jpg --output predictions/
+python inference.py --checkpoint gen.pth.tar --input image.jpg
 
 # Batch processing
-python inference.py --checkpoint gen.pth.tar --input input_folder/ --output predictions/
+python inference.py --checkpoint gen.pth.tar --input folder/ --output predictions/
 ```
 
-## 📁 Dataset Preparation
+## 📊 Training Results
 
-### Format Requirements
-
-Images should be **horizontally concatenated**: `[input_image | target_image]`
-
-- **Total width**: 1200px (600px input + 600px target)
-- **Height**: Any (will be resized to 256×256)
-- **Format**: PNG, JPG, or JPEG
-
-### Directory Structure
+### Loss Curves (50 epochs on CPU)
 
 ```
-data/
-└── your_dataset/
-    ├── train/
-    │   ├── 1.jpg  # [input | target]
-    │   ├── 2.jpg
-    │   └── ...
-    └── val/
-        ├── 1.jpg
-        └── ...
+Epoch 1:  D_loss: 0.5662, G_loss: 59.3279
+Epoch 10: D_loss: 0.2996, G_loss: 14.7441
+Epoch 25: D_loss: 0.5234, G_loss: 13.3018
+Epoch 50: D_loss: 0.4040, G_loss: 12.2581
 ```
 
-### Using Custom Data
+✅ **Model converges successfully** - Generator loss decreased from 59.3 to 12.3  
+✅ **Stable training** - Discriminator maintains balanced loss  
+✅ **Fast convergence** - Good results visible after just 10 epochs
 
-1. Prepare paired images (input + target)
-2. Concatenate them horizontally (600px each)
-3. Place in `data/your_dataset/train/` and `data/your_dataset/val/`
-4. Update `config.py`:
-   ```python
-   TRAIN_DIR = "data/your_dataset/train"
-   VAL_DIR = "data/your_dataset/val"
-   ```
+### Performance Benchmarks
 
-## 🎓 Training
+| Configuration | Hardware | Time (50 epochs) | Quality |
+|--------------|----------|------------------|---------|
+| Optimized (128px) | CPU | **~90 minutes** | Medium |
+| Full (256px) | CPU | ~6-8 hours | High |
+| Full (256px) | GPU (RTX 3080) | **~45 minutes** | High |
+| Full (256px) | Colab T4 | ~2 hours | High |
 
-### Basic Training
+## 🏗️ Architecture
 
-```bash
-# GPU training (full quality)
-python train.py
+### Generator: U-Net
 
-# CPU training (optimized for speed)
-python train_cpu.py
+```
+Input (3×256×256)
+    ↓
+[Encoder: 7 Conv Blocks] → Features: 64→128→256→512→512→512→512
+    ↓
+[Bottleneck: 512 features]
+    ↓
+[Decoder: 7 Deconv Blocks + Skip Connections]
+    ↓
+Output (3×256×256) with Tanh activation
 ```
 
-### Resume Training
+**Key Features:**
+- Skip connections preserve spatial information
+- Dropout for regularization
+- BatchNorm for stable training
 
-```bash
-# Set in config.py
-LOAD_MODEL = True
-CHECKPOINT_GEN = "gen.pth.tar"
-CHECKPOINT_DISC = "disc.pth.tar"
+### Discriminator: PatchGAN
 
-# Then run training
-python train.py
+```
+Concat(Input, Target) (6×256×256)
+    ↓
+[5 Conv Blocks] → Features: 64→128→256→512
+    ↓
+Output: 30×30 patch classifications
 ```
 
-### Monitor Progress
-
-- **Console**: Real-time loss metrics via tqdm
-- **Evaluation folder**: Generated samples saved every epoch
-- **Checkpoints**: Models saved every 5 epochs
-
-### Training Time Estimates
-
-| Configuration | Hardware | Time (500 epochs) |
-|--------------|----------|-------------------|
-| Full (256px, batch 16) | GPU (RTX 3080) | 2-3 hours |
-| Full (256px, batch 16) | CPU | 48-72 hours |
-| Optimized (128px, batch 4) | CPU | 12-18 hours |
-| Quick test (128px, 10 epochs) | CPU | 20-40 minutes |
-
-## 🎨 Inference
-
-### Generate Single Prediction
-
-```bash
-python inference.py \
-    --checkpoint gen.pth.tar \
-    --input path/to/image.jpg \
-    --output predictions/
-```
-
-### Batch Processing
-
-```bash
-python inference.py \
-    --checkpoint gen.pth.tar \
-    --input input_folder/ \
-    --output predictions/
-```
-
-### Programmatic Usage
-
-```python
-from inference import load_generator, generate_prediction
-import torch
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-gen = load_generator("gen.pth.tar", device)
-generate_prediction(gen, "input.jpg", "output.jpg", device)
-```
+**Why PatchGAN?**
+- Classifies image patches instead of whole image
+- Better texture quality
+- Faster training
 
 ## ⚙️ Configuration
 
-Edit `config.py` to customize training:
+Edit `config.py` to customize:
 
 ```python
-# Model parameters
-IMAGE_SIZE = 256          # Image resolution (256, 128, or 512)
+# Training Settings
+IMAGE_SIZE = 256          # Image resolution (128, 256, or 512)
 BATCH_SIZE = 16           # Batch size (reduce if OOM)
+NUM_EPOCHS = 500          # Training epochs
 LEARNING_RATE = 2e-4      # Learning rate
-L1_LAMBDA = 100           # L1 loss weight (100-200)
 
-# Training settings
-NUM_EPOCHS = 500          # Total epochs
-SAVE_MODEL = True         # Save checkpoints
-LOAD_MODEL = False        # Resume from checkpoint
+# Loss Weights
+L1_LAMBDA = 100           # L1 reconstruction loss weight (↑ = more detail)
 
-# Dataset paths
+# Paths
 TRAIN_DIR = "data/maps/train"
 VAL_DIR = "data/maps/val"
 
 # Hardware
 NUM_WORKERS = 2           # DataLoader workers (0 for CPU)
+SAVE_MODEL = True         # Save checkpoints every 5 epochs
+LOAD_MODEL = False        # Resume from checkpoint
 ```
 
-### CPU-Optimized Settings
-
-Use `config_cpu.py` for faster training on CPU:
-
-```python
-IMAGE_SIZE = 128          # Reduced resolution (4x faster)
-BATCH_SIZE = 4            # Smaller batches
-NUM_EPOCHS = 50           # Fewer epochs
-NUM_WORKERS = 0           # Best for CPU
-```
-
-## 📂 Project Structure
+## 📁 Project Structure
 
 ```
 Pix2Pix_from_scratch/
-├── config.py                  # Main configuration
-├── config_cpu.py              # CPU-optimized config
-├── train.py                   # Main training script
-├── train_cpu.py               # CPU-optimized training
-├── inference.py               # Generate predictions
-├── setup.py                   # Environment setup
-├── download_data.py           # Download datasets
 │
-├── generator_model.py         # U-Net generator
-├── discriminator_model.py     # PatchGAN discriminator
-├── dataset.py                 # Dataset loader
-├── utils.py                   # Helper functions
+├── 🎯 Core Models
+│   ├── generator_model.py        # U-Net generator
+│   └── discriminator_model.py    # PatchGAN discriminator
 │
-├── requirements.txt           # Dependencies
-├── README.md                  # This file
-├── .gitignore                # Git ignore rules
+├── 🚂 Training
+│   ├── train.py                  # Main training (GPU/CPU)
+│   ├── train_cpu.py              # CPU-optimized training
+│   ├── config.py                 # Main configuration
+│   └── config_cpu.py             # CPU configuration
 │
-├── data/                      # Datasets (gitignored)
-│   └── maps/
-│       ├── train/
-│       └── val/
+├── 📊 Data
+│   ├── dataset.py                # Dataset loader
+│   └── download_data.py          # Dataset downloader
 │
-├── evaluation/                # Training samples (gitignored)
-├── predictions/               # Inference outputs (gitignored)
+├── 🔧 Utils
+│   ├── utils.py                  # Helper functions
+│   ├── setup.py                  # Environment verification
+│   └── inference.py              # Generate predictions
 │
-└── *.pth.tar                  # Model checkpoints (gitignored)
+├── 📚 Documentation
+│   ├── README.md                 # This file
+│   ├── INSTALLATION.md           # Detailed setup guide
+│   ├── CONTRIBUTING.md           # Contribution guidelines
+│   └── PERFORMANCE_TIPS.md       # Optimization tips
+│
+└── 📦 Generated (gitignored)
+    ├── data/                     # Datasets
+    ├── evaluation/               # Training samples
+    ├── predictions/              # Inference outputs
+    └── *.pth.tar                # Model checkpoints
 ```
 
-## 🚀 Performance Tips
+## 💡 Tips & Tricks
 
-### GPU Training (Recommended)
+### Getting Better Results
 
-**Free GPU Options:**
-- [Google Colab](https://colab.research.google.com/) (T4/V100 GPU)
-- [Kaggle Notebooks](https://www.kaggle.com/) (P100 GPU)
-
-**Setup on Colab:**
-```python
-# Enable GPU: Runtime → Change runtime type → GPU
-!pip install torch torchvision albumentations tqdm
-!python train.py
-```
+1. **Train Longer**: 200-500 epochs for best quality
+2. **Adjust L1_LAMBDA**: Higher values (150-200) preserve more details
+3. **Use More Data**: More training samples = better generalization
+4. **GPU Training**: 50-100x faster than CPU
 
 ### CPU Optimization
 
 If you must use CPU:
 
-1. **Use CPU-optimized script**: `python train_cpu.py`
-2. **Reduce image size**: Set `IMAGE_SIZE = 128`
-3. **Smaller batches**: Set `BATCH_SIZE = 4`
-4. **Fewer epochs**: Set `NUM_EPOCHS = 50`
-5. **Disable workers**: Set `NUM_WORKERS = 0`
+```python
+# config_cpu.py settings
+IMAGE_SIZE = 128      # 4x faster than 256
+BATCH_SIZE = 4        # Lower memory usage
+NUM_EPOCHS = 50       # Reasonable time
+NUM_WORKERS = 0       # Best for CPU
+```
 
-### Memory Optimization
-
-If you run out of memory:
+### Memory Issues
 
 ```python
-BATCH_SIZE = 8            # Reduce batch size
-IMAGE_SIZE = 128          # Reduce image resolution
-NUM_WORKERS = 0           # Reduce workers
+BATCH_SIZE = 8        # or 4
+IMAGE_SIZE = 128      # Reduce resolution
 ```
 
-## 📊 Results
+## 🌐 Cloud Training (Free GPU)
 
-### Sample Outputs
+### Google Colab
 
-Training progression (satellite → map):
-
-| Epoch 0 | Epoch 50 | Epoch 200 | Epoch 500 |
-|---------|----------|-----------|-----------|
-| ![](evaluation/y_gen_0.png) | ![](evaluation/y_gen_50.png) | ![](evaluation/y_gen_200.png) | ![](evaluation/y_gen_500.png) |
-
-*Results improve significantly over training epochs*
-
-### Model Architecture
-
-**Generator (U-Net):**
-- **Encoder**: 7 downsampling blocks (Conv → BatchNorm → LeakyReLU)
-- **Bottleneck**: Single convolution layer
-- **Decoder**: 7 upsampling blocks with skip connections
-- **Output**: Tanh activation for [-1, 1] range
-
-**Discriminator (PatchGAN):**
-- 5 convolutional blocks
-- Outputs 30×30 patch classifications
-- Each patch determines if region is real/fake
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**1. CUDA out of memory**
 ```python
-# In config.py
-BATCH_SIZE = 8  # or 4
-IMAGE_SIZE = 128
+# In Colab notebook
+!pip install albumentations tqdm
+!git clone https://github.com/yourusername/Pix2Pix_from_scratch.git
+%cd Pix2Pix_from_scratch
+!python download_data.py --dataset maps
+!python train.py
 ```
 
-**2. No images found**
-```bash
-python setup.py  # Verify directory structure
-ls data/maps/train  # Check if images exist
-```
+**Enable GPU**: Runtime → Change runtime type → T4 GPU
 
-**3. Slow training on CPU**
-```bash
-python train_cpu.py  # Use optimized version
-```
+### Kaggle Notebooks
 
-**4. Poor quality results**
-- Train for more epochs (500+)
-- Increase `L1_LAMBDA` (try 200)
-- Check data quality and pairing
-- Ensure images are properly aligned
+1. Create new notebook
+2. Enable **GPU P100 accelerator**
+3. Upload code and run
 
-**5. Import errors**
-```bash
-pip install -r requirements.txt --upgrade
-```
+## 📈 Training Progress
 
-**6. Checkpoint loading fails**
-```python
-# In config.py
-LOAD_MODEL = False  # Start fresh
-```
+The model learns progressively:
 
-### Getting Help
+**Epoch 1-10**: Basic shapes and colors  
+**Epoch 10-25**: Refined details and textures  
+**Epoch 25-50**: High-quality, realistic outputs  
+**Epoch 50+**: Fine-tuning and edge cases
 
-1. Check [Issues](link-to-issues) for similar problems
-2. Review `PERFORMANCE_TIPS.md` for optimization
-3. Verify setup with `python setup.py`
-4. Check PyTorch installation: `python -c "import torch; print(torch.__version__)"`
+Monitor progress in the `evaluation/` folder!
+
+## 🎨 Use Cases
+
+### Implemented Examples
+
+- **🗺️ Maps**: Satellite imagery → Street maps
+- **🏢 Facades**: Architectural labels → Building photos
+
+### Potential Applications
+
+- **🎨 Art**: Sketches → Paintings
+- **🌓 Time**: Day → Night scenes
+- **🏞️ Style**: Photo → Artistic rendering
+- **🎮 Gaming**: Low-res → HD textures
+- **🏥 Medical**: Different imaging modalities
+
+## 🤝 Contributing
+
+Contributions welcome! Please check [CONTRIBUTING.md](CONTRIBUTING.md)
+
+**Priority areas:**
+- Pre-trained model weights
+- Additional datasets
+- Performance optimizations
+- Better visualizations
+- Documentation improvements
 
 ## 📚 References
 
-- **Paper**: [Image-to-Image Translation with Conditional Adversarial Networks](https://arxiv.org/abs/1611.07004) (Isola et al., 2017)
-- **Project Page**: [Pix2Pix Official](https://phillipi.github.io/pix2pix/)
-- **Original Implementation**: [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
+### Paper
+**Image-to-Image Translation with Conditional Adversarial Networks**  
+*Phillip Isola, Jun-Yan Zhu, Tinghui Zhou, Alexei A. Efros*  
+CVPR 2017  
+📄 [Paper](https://arxiv.org/abs/1611.07004) | 🌐 [Project Page](https://phillipi.github.io/pix2pix/)
 
 ### Citation
-
-If you use this code in your research, please cite:
 
 ```bibtex
 @inproceedings{isola2017image,
@@ -400,36 +334,43 @@ If you use this code in your research, please cite:
 }
 ```
 
+## 🐛 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| CUDA out of memory | Reduce `BATCH_SIZE` to 8 or 4 |
+| Slow training | Use `train_cpu.py` or switch to GPU |
+| Poor quality | Train longer, increase `L1_LAMBDA` |
+| No images found | Run `python setup.py` to verify |
+| Import errors | `pip install -r requirements.txt --upgrade` |
+
+Full guide: [INSTALLATION.md](INSTALLATION.md)
+
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
-This is an educational implementation. For production use, consider the official implementation.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+This is an educational implementation. For production use, consider the [official implementation](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix).
 
 ## 🙏 Acknowledgments
 
-- Phillip Isola et al. for the original Pix2Pix paper
-- PyTorch team for the excellent framework
-- Berkeley AI Research for dataset hosting
+- **Phillip Isola et al.** for the groundbreaking Pix2Pix paper
+- **PyTorch Team** for the amazing framework
+- **Berkeley AI Research** for hosting datasets
+- **Community** for feedback and contributions
 
-## 📧 Contact
+## 📞 Contact & Support
 
-For questions or suggestions:
-- Open an [Issue](link-to-issues)
-- Email: [ouayazza.abdelaziz@gmail.com]
+- 🐛 **Issues**: [GitHub Issues](https://github.com/abdelaziz2003vvb/Pix2Pix-GAN---Image-to-Image-Translation/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/abdelaziz2003vvb/Pix2Pix-GAN---Image-to-Image-Translation/disscussions)
+- 📧 **Email**: ouayazza.abdelaziz@gmail.com
 
 ---
 
-**Star ⭐ this repo if you find it helpful!**
+<div align="center">
 
-Made with ❤️ by [Abdelaziz ouayazza]
+**⭐ Star this repo if you find it helpful!**
+
+[⬆ Back to Top](#-pix2pix-gan---image-to-image-translation)
+
+</div>
